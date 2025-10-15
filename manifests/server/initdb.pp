@@ -120,7 +120,10 @@ class postgresql::server::initdb {
 
     $initdb_command = $data_checksums ? {
       undef   => $ic_locale,
-      false   => $ic_locale,
+      false   => versioncmp($version, '18') >= 0 ? {
+        true  => "${ic_locale} --no-data-checksums",
+        false => $ic_locale,
+      },
       default => "${ic_locale} --data-checksums"
     }
 
