@@ -14,6 +14,7 @@ class postgresql::server::initdb {
   $group          = $postgresql::server::group
   $user           = $postgresql::server::user
   $module_workdir = $postgresql::server::module_workdir
+  $version        = $postgresql::server::_version
 
   if $facts['os']['family'] == 'RedHat' and $facts['os']['selinux']['enabled'] == true {
     $seltype = 'postgresql_db_t'
@@ -120,7 +121,10 @@ class postgresql::server::initdb {
 
     $initdb_command = $data_checksums ? {
       undef   => $ic_locale,
-      false   => $ic_locale,
+      false   => versioncmp($version, '18') >= 0 ? {
+        true  => "${ic_locale} --no-data-checksums",
+        false => $ic_locale,
+      },
       default => "${ic_locale} --data-checksums"
     }
 
